@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Send 111.txt to Python</title>
+</head>
+<body>
+    <h2>Загрузка 111.txt и отправка в локальный Python</h2>
+    <button onclick="fetchAndSend()">Отправить 111.txt в Python</button>
+    <p id="status"></p>
+
+    <script>
+        async function fetchAndSend() {
+            const status = document.getElementById('status');
+            status.innerText = 'Чтение 111.txt с сервера...';
+
+            try {
+                // 1. Читаем 111.txt, который лежит рядом на сервере
+                const fileResponse = await fetch('111.txt');
+                if (!fileResponse.ok) throw new Error('Файл 111.txt не найден на сервере');
+                const fileText = await fileResponse.text();
+
+                status.innerText = 'Файл прочитан. Отправка на ПК в Python...';
+
+                // 2. Шлем текст в локальный Python (127.0.0.1:5000)
+                const pyResponse = await fetch('http://127.0.0.1:5000/receive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: fileText })
+                });
+
+                const result = await pyResponse.json();
+                status.innerText = '✅ ' + result.message;
+
+            } catch (err) {
+                status.innerText = '❌ Ошибка: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
